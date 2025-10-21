@@ -58,7 +58,7 @@ func (h Handler) DeleteTask(c *gin.Context) {
 
 	if err := h.DB.First(&task, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"message": "No task found with this id"})
+			c.JSON(http.StatusNotFound, gin.H{"error": "No task found with this id"})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
