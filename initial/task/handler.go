@@ -18,6 +18,7 @@ func (h Handler) RegisterRoutes(r *gin.Engine) {
 	r.GET("/tasks", h.GetAllTasks)
 	r.DELETE("/tasks/:id", h.DeleteTask)
 	r.GET("/tasks/:id", h.GetTaskDetail)
+	r.PATCH("/tasks/:id", h.UpdateTask)
 }
 
 //Create new task
@@ -91,3 +92,28 @@ func (h Handler) GetTaskDetail(c *gin.Context) {
 	c.JSON(http.StatusOK, task)
 }
 
+// update task using patch using id
+func (h Handler) UpdateTask(c *gin.Context) {
+	id := c.Param("id")
+	var task Task
+	if err := h.DB.First(&task, id).Error ; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "No task found with this id"})
+			return 
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := c.ShouldBindJSON(&task); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return 
+	} 
+
+	if err := h.DB.Save(&task).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return 
+	}
+
+	c.JSON(http.StatusOK, task)
+}
