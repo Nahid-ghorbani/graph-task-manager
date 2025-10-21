@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/Nahid-ghorbani/graph-task-manager/initial/db"
 )
@@ -9,8 +9,8 @@ import (
 func main() {
 
 	database := db.Connect()
-	_ = database
-
-	
-	fmt.Println("app works")
+	if err := database.AutoMigrate(); err != nil {
+		log.Fatalf("Failed to migrate! , error : %v", err)
+	}
+	log.Println("Migration completed!")
 }

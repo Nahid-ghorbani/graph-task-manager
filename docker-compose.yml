@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: gtm-db
+    restart: always
+    environment: 
+      POSTGRES_USER: graph
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: gtm-db
+    ports:
+      - "5444:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+volumes:
+  postgres_data:
