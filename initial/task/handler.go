@@ -16,6 +16,7 @@ type Handler struct {
 func (h Handler) RegisterRoutes(r *gin.Engine) {
 	r.POST("/tasks", h.CreateTask)
 	r.GET("/tasks", h.GetAllTasks)
+	r.DELETE("/tasks/:id", h.DeleteTask)
 }
 
 //Create new task
@@ -49,3 +50,25 @@ func (h Handler) GetAllTasks(c *gin.Context) {
 	c.JSON(http.StatusOK, tasks)
 }
 
+//Delete task using id
+func (h Handler) DeleteTask(c *gin.Context) {
+	id := c.Param("id")
+
+	var task Task
+
+	if err := h.DB.First(&task, id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"message": "No task found with this id"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.DB.Delete(&task).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Task deleted successfully"})
+}
