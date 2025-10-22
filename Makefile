@@ -1,12 +1,18 @@
-.DEFAULT_GOAL: build
+.DEFAULT_GOAL := build
 
 .PHONY: fmt vet build
 
-.fmt:
-	fmt ./...
+fmt:
+	go fmt ./...
 
-.vet:fmt
-	vet ./...
+vet:fmt
+	go vet ./...
 
-.build:vet
-	go build
+build:vet
+	go build ./cmd/app
+
+clean:
+	rm -f build
+
+tidy:
+	go mod tidy
