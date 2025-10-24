@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/Nahid-ghorbani/graph-task-manager/initial/db"
-	"github.com/Nahid-ghorbani/graph-task-manager/initial/task"
+	"github.com/Nahid-ghorbani/graph-task-manager/internal/db"
+	"github.com/Nahid-ghorbani/graph-task-manager/internal/task"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,7 +18,8 @@ func main() {
 
 	router := gin.Default()
 
-	taskHandler := task.Handler{DB: database}
+	taskRepo := task.NewGormRepository(database)
+	taskHandler := task.NewTaskHandler(taskRepo)
 	taskHandler.RegisterRoutes(router)
 
 	router.Run(":8080")
