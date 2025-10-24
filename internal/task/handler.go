@@ -8,12 +8,16 @@ import (
 	"gorm.io/gorm"
 )
 
-type Handler struct {
-	DB *gorm.DB
+type TaskHandler struct {
+	Repo TaskRepository
+}
+
+func NewTaskHandler(repo TaskRepository) *TaskHandler {
+	return &TaskHandler{Repo: repo}
 }
 
 // Attach task routes to router
-func (h Handler) RegisterRoutes(r *gin.Engine) {
+func (h TaskHandler) RegisterRoutes(r *gin.Engine) {
 	r.POST("/tasks", h.CreateTask)
 	r.GET("/tasks", h.GetAllTasks)
 	r.DELETE("/tasks/:id", h.DeleteTask)
@@ -22,14 +26,14 @@ func (h Handler) RegisterRoutes(r *gin.Engine) {
 }
 
 //Create new task
-func (h Handler) CreateTask(c *gin.Context){
+func (h TaskHandler) CreateTask(c *gin.Context){
 	var task Task
 	if err := c.ShouldBindJSON(&task); err != nil {
 		fmt.Println("****task:", &task)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := h.DB.Create(&task).Error; err != nil {
+	if err := h.Repo.Create(&task); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -37,10 +41,10 @@ func (h Handler) CreateTask(c *gin.Context){
 }
 
 //Get all tasks
-func (h Handler) GetAllTasks(c *gin.Context) {
+func (h TaskHandler) GetAllTasks(c *gin.Context) {
 	var tasks []Task
 	
-	if err := h.DB.Find(&tasks).Error; err != nil {
+	if err := h.Repo.GetAll(&tasks); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -53,12 +57,12 @@ func (h Handler) GetAllTasks(c *gin.Context) {
 }
 
 //Delete task using id
-func (h Handler) DeleteTask(c *gin.Context) {
+func (h TaskHandler) DeleteTask(c *gin.Context) {
 	id := c.Param("id")
 
 	var task Task
 
-	if err := h.DB.First(&task, id).Error; err != nil {
+	if err := h.Repo.FindTask(&task, id); err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "No task found with this id"})
 			return
@@ -67,7 +71,7 @@ func (h Handler) DeleteTask(c *gin.Context) {
 		return
 	}
 
-	if err := h.DB.Delete(&task).Error; err != nil {
+	if err := h.Repo.Delete(&task); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -77,11 +81,11 @@ func (h Handler) DeleteTask(c *gin.Context) {
 
 
 //Get task detail using id
-func (h Handler) GetTaskDetail(c *gin.Context) {
+func (h TaskHandler) GetTaskDetail(c *gin.Context) {
 	id := c.Param("id")
 
 	var task Task
-	if err := h.DB.First(&task , id).Error ; err != nil {
+	if err := h.Repo.FindTask(&task, id) ; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "No task found with this id"})
 			return
@@ -93,10 +97,10 @@ func (h Handler) GetTaskDetail(c *gin.Context) {
 }
 
 // update task using patch using id
-func (h Handler) UpdateTask(c *gin.Context) {
+func (h TaskHandler) UpdateTask(c *gin.Context) {
 	id := c.Param("id")
 	var task Task
-	if err := h.DB.First(&task, id).Error ; err != nil {
+	if err := h.Repo.FindTask(&task, id) ; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "No task found with this id"})
 			return 
@@ -110,7 +114,7 @@ func (h Handler) UpdateTask(c *gin.Context) {
 		return 
 	} 
 
-	if err := h.DB.Save(&task).Error; err != nil {
+	if err := h.Repo.Update(&task); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return 
 	}
