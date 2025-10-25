@@ -16,3 +16,6 @@ clean:
 
 tidy:
 	go mod tidy
+
+test:
+	go test ./internal/task/task_handle_test -v
