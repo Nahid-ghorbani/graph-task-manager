@@ -10,6 +10,38 @@ services:
     ports:
       - "5444:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
+  app:
+    container_name: gtm_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+      sh -c "
+        until nc -z $${DB_HOST} $${DB_PORT}; do
+          echo 'Waiting for Postgres...';
+          sleep 2;
+        done;
+        go run ./cmd/task-manager
+      "
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: postgres
+      DB_USER: graph
+      DB_PASSWORD: 1234
+      DB_NAME: gtm-db
+      DB_PORT: 5432
+    depends_on:
+      - postgres
+    volumes:
+      - .:/graph-task-manager
+    working_dir: /graph-task-manager
+
+
 volumes:
   postgres_data:
+
+networks:
+  default:
+    name: gtm-network
