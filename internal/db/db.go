@@ -2,7 +2,6 @@ package db
 
 import (
 	"fmt"
-	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
@@ -10,10 +9,6 @@ import (
 )
 
 func Connect() *gorm.DB {
-	if err := godotenv.Load(".env"); err != nil {
-		log.Println("The .env file didn't found :|")
-	}
-
 	host := os.Getenv("DB_HOST")
 	user := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASSWORD")
