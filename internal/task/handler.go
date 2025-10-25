@@ -3,6 +3,7 @@ package task
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -25,8 +26,8 @@ func (h TaskHandler) RegisterRoutes(r *gin.Engine) {
 	r.PATCH("/tasks/:id", h.UpdateTask)
 }
 
-//Create new task
-func (h TaskHandler) CreateTask(c *gin.Context){
+// Create new task
+func (h TaskHandler) CreateTask(c *gin.Context) {
 	var task Task
 	if err := c.ShouldBindJSON(&task); err != nil {
 		fmt.Println("****task:", &task)
@@ -40,10 +41,10 @@ func (h TaskHandler) CreateTask(c *gin.Context){
 	c.JSON(http.StatusCreated, task)
 }
 
-//Get all tasks
+// Get all tasks
 func (h TaskHandler) GetAllTasks(c *gin.Context) {
 	var tasks []Task
-	
+
 	if err := h.Repo.GetAll(&tasks); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -56,9 +57,14 @@ func (h TaskHandler) GetAllTasks(c *gin.Context) {
 	c.JSON(http.StatusOK, tasks)
 }
 
-//Delete task using id
+// Delete task using id
 func (h TaskHandler) DeleteTask(c *gin.Context) {
-	id := c.Param("id")
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid task ID"})
+		return
+	}
 
 	var task Task
 
@@ -79,13 +85,17 @@ func (h TaskHandler) DeleteTask(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Task deleted successfully"})
 }
 
-
-//Get task detail using id
+// Get task detail using id
 func (h TaskHandler) GetTaskDetail(c *gin.Context) {
-	id := c.Param("id")
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid task ID"})
+		return
+	}
 
 	var task Task
-	if err := h.Repo.FindTask(&task, id) ; err != nil {
+	if err := h.Repo.FindTask(&task, id); err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "No task found with this id"})
 			return
@@ -98,12 +108,18 @@ func (h TaskHandler) GetTaskDetail(c *gin.Context) {
 
 // update task using patch using id
 func (h TaskHandler) UpdateTask(c *gin.Context) {
-	id := c.Param("id")
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid task ID"})
+		return
+	}
+
 	var task Task
-	if err := h.Repo.FindTask(&task, id) ; err != nil {
+	if err := h.Repo.FindTask(&task, id); err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "No task found with this id"})
-			return 
+			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -111,12 +127,12 @@ func (h TaskHandler) UpdateTask(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&task); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return 
-	} 
+		return
+	}
 
 	if err := h.Repo.Update(&task); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return 
+		return
 	}
 
 	c.JSON(http.StatusOK, task)

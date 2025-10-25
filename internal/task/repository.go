@@ -10,7 +10,7 @@ type TaskRepository interface{
 	Update(task *Task) error
 	GetAll(tasks *[]Task) error
 	Delete(task *Task) error
-	FindTask(task *Task, id any) error
+	FindTask(task *Task, id int) error
 }
 
 type GormRepository struct{
@@ -49,10 +49,9 @@ func (r *GormRepository) GetAll(tasks *[]Task) error {
 	return nil
 }
 
-func (r *GormRepository) FindTask(task *Task, id any) error {
+func (r *GormRepository) FindTask(task *Task, id int) error {
 	if err := r.DB.Find(&task, id).Error; err != nil {
 		return err
 	}
 	return nil
 }
-
