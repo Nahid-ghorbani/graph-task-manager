@@ -1,0 +1,22 @@
+Setup and Running
+
+    1.clone the repository
+        git clone https://github.com/Nahid-ghorbani/graph-task-manager.git
+        cd graph-task-manager
+
+    2.Build and run with docker-compose.yml file
+        docker compose up --build
+
+    3.Accessing to app on localhost
+        app: http://localhost:8080
+        postgres: http://localhost:5444 >> psql -h localhost -p 5444 -U graph -d gtm-db
+
+    ** For running app on local you can use Follow command on root path:
+        go run ./cmd/task-manager
+
+    ** The app waits for the database to be ready before starting, wait until see the success message.
+
+Testing
+
+    For testing app after running it on local machine, just run follow command:
+    make test
